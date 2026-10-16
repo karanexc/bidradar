@@ -1,0 +1,22 @@
+name: Daily agent run
+
+# Free scheduler: GitHub calls your agent every weekday morning.
+# Add two repository secrets (Settings → Secrets and variables → Actions):
+#   AGENT_URL    e.g. https://bidradar-agent.onrender.com
+#   CRON_SECRET  the same value as CRON_SECRET in agent/.env
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"   # 06:00 UTC, Monday to Friday
+  workflow_dispatch: {}      # lets you run it manually from the Actions tab
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger daily job
+        run: |
+          curl -fsS --retry 3 --retry-delay 20 --max-time 120 \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.AGENT_URL }}/jobs/daily"
